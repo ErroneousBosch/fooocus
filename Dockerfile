@@ -1,6 +1,6 @@
 ARG CUDAVER=12.3.2
-ARG PYTHONVER=3.11
 FROM nvidia/cuda:${CUDAVER}-base-ubuntu22.04
+ARG PYTHONVER=3.11
 ENV DEBIAN_FRONTEND noninteractive
 ENV CMDARGS --listen
 
@@ -10,12 +10,12 @@ RUN echo "deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main"
 
 # we are stuck with python 3.11 due to torch 2.1.0
 RUN apt-get update -y && \
-	apt-get install -y curl libgl1 libglib2.0-0 git python${PYTHONVER} python${PYTHONVER}-dev python${PYTHONVER}-distutils && \
+	apt-get install -y curl libgl1 libglib2.0-0 git python$PYTHONVER python$PYTHONVER-dev python$PYTHONVER-distutils && \
 	apt-get upgrade -y && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 #symlink to run in the correct version
-RUN ln -s /usr/bin/python${PYTHONVER} /usr/bin/python 
+RUN ln -s /usr/bin/python$PYTHONVER /usr/bin/python 
 # install pip
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
 	python get-pip.py && \
@@ -34,8 +34,8 @@ RUN cp /content/app/requirements_docker.txt /content/app/requirements_versions.t
 RUN pip install --no-cache-dir -r /tmp/requirements_docker.txt -r /tmp/requirements_versions.txt && \
 	rm -f /tmp/requirements_docker.txt /tmp/requirements_versions.txt
 RUN pip install --no-cache-dir xformers==0.0.23 --no-dependencies 
-RUN curl -fsL -o /usr/local/lib/python${PYTHONVER}/dist-packages/gradio/frpc_linux_amd64_v0.2 https://cdn-media.huggingface.co/frpc-gradio-0.2/frpc_linux_amd64 && \
-	chmod +x /usr/local/lib/python${PYTHONVER}/dist-packages/gradio/frpc_linux_amd64_v0.2
+RUN curl -fsL -o /usr/local/lib/python$PYTHONVER/dist-packages/gradio/frpc_linux_amd64_v0.2 https://cdn-media.huggingface.co/frpc-gradio-0.2/frpc_linux_amd64 && \
+	chmod +x /usr/local/lib/python$PYTHONVER/dist-packages/gradio/frpc_linux_amd64_v0.2
 	
 ENV DATADIR=/content/data  
 ENV config_path=/content/data/config.txt
