@@ -1,8 +1,8 @@
 ARG CUDAVER=12.3.2
 FROM nvidia/cuda:${CUDAVER}-base-ubuntu22.04
 ARG PYTHONVER=3.11
-ENV DEBIAN_FRONTEND noninteractive
-ENV CMDARGS --listen
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CMDARGS=--listen
 
 RUN echo "deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" >> /etc/apt/sources.list && \
 	echo "deb-src https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" >> /etc/apt/sources.list &&\
@@ -10,24 +10,29 @@ RUN echo "deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main"
 
 # we are stuck with python 3.11 due to torch 2.1.0
 RUN apt-get update -y && \
-	apt-get install -y curl libgl1 libglib2.0-0 git python$PYTHONVER python$PYTHONVER-dev python$PYTHONVER-distutils && \
+	apt-get install -y curl libgl1 libglib2.0-0 git wget python$PYTHONVER python$PYTHONVER-dev python$PYTHONVER-distutils && \
 	apt-get upgrade -y && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 #symlink to run in the correct version
 RUN ln -s /usr/bin/python$PYTHONVER /usr/bin/python 
 # install pip
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+RUN curl https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py && \
 	python get-pip.py && \
 	rm get-pip.py
 #add user
 RUN adduser --disabled-password --uid 1000 --gecos '' user && \
 	mkdir -p /content/app /content/data
 # Everything below here is pretty much the same as standard, 
-WORKDIR /content
+WORKDIR /content/app
 
+ARG REPO=lllyasviel/Fooocus
+ARG RELEASE=2.4.3
 
-RUN git clone https://github.com/lllyasviel/Fooocus /content/app
+RUN wget -O fooocus.tar.gz https://github.com/$REPO/archive/refs/tags/v$RELEASE.tar.gz \
+	&& tar -xvf fooocus.tar.gz --strip-components=1 \
+	&& rm fooocus.tar.gz
+# RUN git clone https://github.com/${REPO} /content/app
 RUN mv /content/app/models /content/app/models.org
 
 RUN cp /content/app/requirements_docker.txt /content/app/requirements_versions.txt /tmp/
