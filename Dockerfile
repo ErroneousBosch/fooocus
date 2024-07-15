@@ -26,10 +26,13 @@ RUN adduser --disabled-password --uid 1000 --gecos '' user && \
 # Everything below here is pretty much the same as standard, 
 WORKDIR /content/app
 
+#mashb1t/Fooocus is a more advanced option
 ARG REPO=lllyasviel/Fooocus
-ARG RELEASE=2.4.3
+# Ifyou want a specific tag, pass 'tags/<tagname>'
+ARG RELEASE=latest
 
-RUN wget -O fooocus.tar.gz https://github.com/$REPO/archive/refs/tags/v$RELEASE.tar.gz \
+RUN RELEASE_URL=$(curl -s https://api.github.com/repos/$REPO/releases/$RELEASE | grep tarball_url | head -n 1 | cut -d '"' -f 4 ) \
+&& wget -O fooocus.tar.gz $RELEASE_URL \
 	&& tar -xvf fooocus.tar.gz --strip-components=1 \
 	&& rm fooocus.tar.gz
 # RUN git clone https://github.com/${REPO} /content/app
